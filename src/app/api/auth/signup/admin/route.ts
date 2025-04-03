@@ -16,18 +16,16 @@ export async function POST(req: NextRequest) {
       );
     }
     const admin = await Admin.findOne({
-      district: formData.district,
-      taluka: formData.taluka,
+      state: "Maharashtra",
     });
     if (admin) {
       return NextResponse.json(
-        { message: "Admin already exists for this district and taluka" },
+        { message: "Admin already exists for this District" },
         { status: 400 }
       );
     }
     // Encrypt Password
     const encryptedPassword = await bcrypt.hash(formData.password, 10);
-    // Create New User
     const newUser = new Admin({
       ...formData,
       state: "Maharashtra",

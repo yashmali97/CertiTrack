@@ -1,10 +1,8 @@
 import bcrypt from "bcryptjs";
-import Admin from "@/models/Admin.model";
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import dbConfig from "@/middlewares/db.config";
-import Voter from "@/models/Voter.model";
-import Candidate from "@/models/Candidate.model";
+import Admin from "@/models/Admin";
 
 dbConfig();
 
@@ -17,12 +15,12 @@ export async function POST(req: NextRequest) {
     );
   }
   if (
-    formData.email === "admin@trustchain.com" &&
+    formData.email === "admin@certitrack.com" &&
     formData.password === "Admin@123"
   ) {
     const data = {
-      id: "admin",
-      email: "admin@trustchain.com",
+      id: "super-admin",
+      email: "admin@certitrack.com",
       role: "super-admin",
       name: "Super Admin",
       profileImage:

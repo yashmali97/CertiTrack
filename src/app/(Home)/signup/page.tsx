@@ -21,14 +21,11 @@ const SignUp = () => {
   });
   const router = useRouter();
   const handleSubmit = async () => {
-    console.log(formData);
     if (
       !formData.name ||
       !formData.email ||
       !formData.phone ||
       !formData.password ||
-      !formData.district ||
-      !formData.taluka ||
       !formData.role ||
       !formData.profileImage
     ) {
@@ -50,21 +47,34 @@ const SignUp = () => {
       },
     });
   };
-  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    folderName: string,
+    imageName: string,
+    path: string
+  ) => {
+    if (!formData.name) {
+      toast.error("Name is required for images");
+      return;
+    }
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 5 * 1024 * 1024) {
         alert("File size exceeds 5MB");
         return;
       }
-      const imageResponse = axios.postForm("/api/helper/upload-img", { file });
+      const imageResponse = axios.postForm("/api/helper/upload-img", {
+        file,
+        name: imageName,
+        folderName: folderName,
+      });
+      console.log(imageResponse);
       toast.promise(imageResponse, {
         loading: "Uploading Image...",
         success: (data: AxiosResponse) => {
-          console.log(data.data);
           setFormData({
             ...formData,
-            profileImage: data.data.data.url,
+            [path]: data.data.path,
           });
           return "Image Uploaded Successfully";
         },
@@ -116,48 +126,24 @@ const SignUp = () => {
                   maxLength={10}
                 />
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 text-base-content">
-                <select
-                  className="select input-primary w-full text-base-content placeholder:text-base-content/70"
-                  value={formData.district}
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend text-base">
+                  Profile Image
+                </legend>
+                <input
+                  type="file"
+                  className="file-input file-input-bordered file-input-primary w-full text-base-content"
+                  accept="image/* .jpg"
                   onChange={(e) => {
-                    setFormData({ ...formData, district: e.target.value });
+                    handleProfileImageChange(
+                      e,
+                      "profileImage",
+                      formData.name,
+                      "profileImage"
+                    );
                   }}
-                >
-                  <option value="" disabled defaultChecked>
-                    Select District
-                  </option>
-                  {MAHARASHTRA_DISTRICTS.map((district) => (
-                    <option key={district} value={district}>
-                      {district}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="select input-primary w-full text-base-content placeholder:text-base-content/70"
-                  value={formData.taluka}
-                  onChange={(e) => {
-                    setFormData({ ...formData, taluka: e.target.value });
-                  }}
-                >
-                  <option value="" disabled defaultChecked>
-                    Select Taluka
-                  </option>
-                  {formData.district &&
-                    MAHARASHTRA_TALUKAS[formData.district].map((taluka) => (
-                      <option key={taluka} value={taluka}>
-                        {taluka}
-                      </option>
-                    ))}
-                </select>
-              </div>
-              <input
-                type="file"
-                className="file-input w-full text-base-content"
-                placeholder="Upload Profile Image"
-                accept="image/* .png .jpeg .jpg"
-                onChange={handleProfileImageChange}
-              />
+                />
+              </fieldset>
               <select
                 className="select select-primary w-full text-base-content"
                 value={formData.role}
@@ -165,9 +151,7 @@ const SignUp = () => {
                   setFormData({ ...formData, role: e.target.value });
                 }}
               >
-                <option value="" disabled selected>
-                  Select Role
-                </option>
+                <option value="">Select Role</option>
                 <option value="admin">Admin</option>
                 <option value="district-officer">District Officer (DO)</option>
                 <option value="sub-division-officer">
@@ -176,6 +160,45 @@ const SignUp = () => {
                 <option value="certificate-officer">Certificate Officer</option>
                 <option value="user">User</option>
               </select>
+              {formData.role !== "admin" && (
+                <div className="flex flex-col sm:flex-row gap-3 text-base-content">
+                  <select
+                    className="select input-primary w-full text-base-content placeholder:text-base-content/70"
+                    value={formData.district}
+                    onChange={(e) => {
+                      setFormData({ ...formData, district: e.target.value });
+                    }}
+                  >
+                    <option value="" disabled defaultChecked>
+                      Select District
+                    </option>
+                    {MAHARASHTRA_DISTRICTS.map((district) => (
+                      <option key={district} value={district}>
+                        {district}
+                      </option>
+                    ))}
+                  </select>
+                  {formData.role !== "district-officer" && (
+                    <select
+                      className="select input-primary w-full text-base-content placeholder:text-base-content/70"
+                      value={formData.taluka}
+                      onChange={(e) => {
+                        setFormData({ ...formData, taluka: e.target.value });
+                      }}
+                    >
+                      <option value="" disabled defaultChecked>
+                        Select Taluka
+                      </option>
+                      {formData.district &&
+                        MAHARASHTRA_TALUKAS[formData.district].map((taluka) => (
+                          <option key={taluka} value={taluka}>
+                            {taluka}
+                          </option>
+                        ))}
+                    </select>
+                  )}
+                </div>
+              )}
               <div className="relative">
                 <input
                   type={visible ? "text" : "password"}

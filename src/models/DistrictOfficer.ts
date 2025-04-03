@@ -22,11 +22,6 @@ const DistrictOfficerSchema = new Schema({
     unique: true,
     required: true,
   },
-  taluka: {
-    type: String,
-    unique: true,
-    required: true,
-  },
   role: {
     type: String,
     required: true,
